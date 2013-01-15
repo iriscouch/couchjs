@@ -30,11 +30,6 @@ var INPUT = { 'waiting': false
             }
 
 
-; [Error, Function].forEach(function(type) {
-  type.prototype.toSource = type.prototype.toSource || toSource
-  type.prototype.toString = type.prototype.toString || toSource
-})
-
 function toSource() {
   if(typeof this == 'function')
     return '' + this
@@ -69,6 +64,12 @@ function main() {
         INPUT.queue.push(line)
     })
     process.stdin.resume()
+
+
+    ; [Error, Function].forEach(function(type) {
+      type.prototype.toSource = type.prototype.toSource || toSource
+      type.prototype.toString = type.prototype.toString || toSource
+    })
 
     var main_func = Function(['print', 'readline', 'evalcx', 'gc'], body)
 
