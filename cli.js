@@ -17,6 +17,7 @@
 //    limitations under the License.
 
 var fs = require('fs')
+var XML = require('./xml')
 var util = require('util')
 var Fiber = require('fibers')
 var optimist = require('optimist')
@@ -127,8 +128,8 @@ function evalcx(source, sandbox) {
     return sandbox
 
   // source might be "function(doc) { emit(doc._id, 1) }"
-  var func_arg_names = []
-    , func_arg_vals  = []
+  var func_arg_names = ['XML']
+    , func_arg_vals  = [XML]
     , func_src = 'return (' + source + ')'
 
   Object.keys(sandbox).forEach(function(key) {
