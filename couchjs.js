@@ -12,3 +12,90 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+module.exports = { 'print'   : print
+                 , 'readline': readline
+                 , 'stdin'   : stdin
+                 , 'evalcx'  : evalcx
+                 , 'gc'      : gc
+                 }
+
+
+var Fiber = require('fibers')
+
+var XML = require('./xml')
+var console = require('./console')
+
+var INPUT = {'queue':[], 'waiting':null}
+
+
+function print(line) {
+  console.log('STDOUT: %s', line)
+  process.stdout.write(line + '\n')
+
+  try {
+    line = JSON.parse(line)
+  } catch(er) { return }
+
+  if(line[0] == 'log')
+    console.log('LOG: %s', line[1])
+}
+
+function stdin(line) {
+  console.log('STDIN: %s', line.trim())
+  if(INPUT.waiting)
+    INPUT.waiting.run(line)
+  else
+    INPUT.queue.push(line)
+}
+
+function readline() {
+  var line = INPUT.queue.shift()
+  if(line)
+    return line
+
+  INPUT.waiting = Fiber.current
+  line = Fiber.yield()
+  INPUT.waiting = null
+
+  return line
+}
+
+
+function evalcx(source, sandbox) {
+  sandbox = sandbox || {}
+  //console.log('evalcx in %j: %j', Object.keys(sandbox), source)
+
+  if(source == '')
+    return sandbox
+
+  // source might be "function(doc) { emit(doc._id, 1) }"
+  var func_arg_names = ['XML']
+    , func_arg_vals  = [XML]
+    , func_src = 'return (' + source + ')'
+
+  Object.keys(sandbox).forEach(function(key) {
+    if(typeof sandbox[key] != 'function')
+      return
+
+    func_arg_names.push(key)
+    func_arg_vals.push(sandbox[key])
+  })
+
+  try {
+    var func_maker = Function(func_arg_names, func_src)
+  } catch (er) {
+    console.log('Error making maker: %s', er.stack)
+    return sandbox
+  }
+
+  try {
+    var func = func_maker.apply(null, func_arg_vals)
+  } catch (er) {
+    console.log('Error running maker: %s', er.stack)
+    return sandbox
+  }
+
+  return func
+}
+
+function gc() { }
