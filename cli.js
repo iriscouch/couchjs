@@ -23,31 +23,12 @@ var Fiber = require('fibers')
 var optimist = require('optimist')
 
 var couchjs = require('./couchjs')
+var console = require('./console')
 
 var INPUT = { 'waiting': false
             , 'queue'  : []
             }
 
-var LOG_PATH = '/tmp/couchjs.' + process.pid + '.log'
-LOG_PATH = '/tmp/couchjs.log' // XXX
-var LOG = fs.createWriteStream(LOG_PATH, {'flags':'a'})
-
-var console = {}
-console.log = function() {
-  var str = util.format.apply(this, arguments)
-  LOG.write(str + '\n')
-}
-
-process.on('exit', on_exit)
-process.on('uncaughtException', on_exit)
-function on_exit(er) {
-  if(er)
-    console.log('Error %d: %s', process.pid, er.stack)
-  else
-    console.log('Exit %d', process.pid)
-
-  LOG.end()
-}
 
 ; [Error, Function].forEach(function(type) {
   type.prototype.toSource = type.prototype.toSource || toSource
