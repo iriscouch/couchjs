@@ -4,6 +4,8 @@
 
 *couchjs* is a command-line Node.js program. It is 100% compatible with Apache CouchDB's built-in JavaScript system.
 
+By using *couchjs*, you will get 100% CouchDB compatibility (the test suite completely passes) but your JavaScript environment is V8, or Node.js.
+
 *couchjs* is available as an npm module.
 
     $ npm install -g couchjs
