@@ -30,15 +30,6 @@ var INPUT = { 'waiting': false
 var LOG_PATH = '/tmp/couchjs.' + process.pid + '.log'
 LOG_PATH = '/tmp/couchjs.log' // XXX
 var LOG = fs.createWriteStream(LOG_PATH, {'flags':'a'})
-process.on('exit', function() {
-  console.log('Exit: %s', process.pid)
-  LOG.end()
-})
-
-process.on('uncaughtException', function(er) {
-  console.log('Exit %s: %s', process.pid, er.stack)
-  LOG.end()
-})
 
 var console = {}
 console.log = function() {
@@ -46,11 +37,20 @@ console.log = function() {
   LOG.write(str + '\n')
 }
 
-var toSource_types = [Error]
-//toSource_types = []
-toSource_types.forEach(function(type) {
-  type.prototype.toString = type.prototype.toString || toSource
+process.on('exit', on_exit)
+process.on('uncaughtException', on_exit)
+function on_exit(er) {
+  if(er)
+    console.log('Error %d: %s', process.pid, er.stack)
+  else
+    console.log('Exit %d', process.pid)
+
+  LOG.end()
+}
+
+; [Error, Function].forEach(function(type) {
   type.prototype.toSource = type.prototype.toSource || toSource
+  type.prototype.toString = type.prototype.toString || toSource
 })
 
 function toSource() {
@@ -64,24 +64,34 @@ function toSource() {
 }
 
 function main() {
-  var args = argv()
-    , main_js = args._[0]
+  var argv = optimist.boolean(['h', 'V', 'H'])
+                     .describe({ 'h': 'display a short help message and exit'
+                               , 'V': 'display version information and exit'
+                               , 'H': 'enable couchjs cURL bindings (not implemented)'
+                               })
+                     .argv
 
+  var main_js = argv._[0]
   console.log('couchjs %s: %s', process.pid, main_js)
-  console.log('My fiber: %j', Fiber.current)
+
   fs.readFile(main_js, 'utf8', function(er, body) {
     if(er)
       throw er
 
     process.stdin.setEncoding('utf8')
-    process.stdin.on('data', input)
+    process.stdin.on('data', function(line) {
+      console.log('STDIN: %s', line.trim())
+      if(INPUT.waiting)
+        INPUT.waiting.run(line)
+      else
+        INPUT.queue.push(line)
+    })
     process.stdin.resume()
 
-    console.log('Call main')
     var main_func = Function(['print', 'readline', 'evalcx', 'gc'], body)
 
+    console.log('Call main')
     Fiber(function() { main_func(print, readline, evalcx, gc) }).run()
-    console.log('Called main')
   })
 }
 
@@ -93,33 +103,19 @@ function print(line) {
     line = JSON.parse(line)
   } catch(er) { return }
 
-  var cmd = line[0]
-  if(cmd == 'log')
+  if(line[0] == 'log')
     console.log('LOG: %s', line[1])
 }
 
-function input(line) {
-  console.log('STDIN in %j: %s', Fiber.current, line.trim())
-  if(INPUT.waiting)
-    INPUT.waiting.run(line)
-  else
-    INPUT.queue.push(line)
-}
-
 function readline() {
-  var fiber = Fiber.current
-  //console.log('** readline in %j', fiber)
-
   var line = INPUT.queue.shift()
   if(line)
     return line
 
-  //console.log('  -> wait for input')
-  INPUT.waiting = fiber
+  INPUT.waiting = Fiber.current
   line = Fiber.yield()
   INPUT.waiting = null
 
-  //console.log('readline %j return: %j', Fiber.current, line)
   return line
 }
 
@@ -143,22 +139,24 @@ function evalcx(source, sandbox) {
     func_arg_vals.push(sandbox[key])
   })
 
-  var func_maker = Function(func_arg_names, func_src)
-  var func = func_maker.apply(null, func_arg_vals)
+  try {
+    var func_maker = Function(func_arg_names, func_src)
+  } catch (er) {
+    console.log('Error making maker: %s', er.stack)
+    return sandbox
+  }
+
+  try {
+    var func = func_maker.apply(null, func_arg_vals)
+  } catch (er) {
+    console.log('Error running maker: %s', er.stack)
+    return sandbox
+  }
 
   return func
 }
 
 function gc() { }
-
-function argv() {
-  return optimist.boolean(['h', 'V', 'H'])
-                 .describe({ 'h': 'display a short help message and exit'
-                           , 'V': 'display version information and exit'
-                           , 'H': 'enable couchjs cURL bindings (not implemented)'
-                           })
-                 .argv
-}
 
 if(require.main === module)
   main()
