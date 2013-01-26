@@ -34,6 +34,7 @@ function LineStream () {
 LineStream.prototype.write = function(data, encoding) {
   var self = this
 
+  data = data || ''
   if(typeof data != 'string')
     return self.error(new Error('Data was not a string: ' + util.inspect(data)))
 
@@ -55,4 +56,16 @@ LineStream.prototype.end = function(data, encoding) {
 
   // Always call write, even with no data, so it can fire the "end" event.
   self.write(data)
+}
+
+
+LineStream.prototype.error = function(er) {
+  var self = this
+
+  self.readable = false
+  self.writable = false
+  self.emit('error', er)
+
+  // The write() method sometimes returns this value, so if there was an error, make write() return false.
+  return false
 }
