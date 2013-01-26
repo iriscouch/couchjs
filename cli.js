@@ -23,6 +23,7 @@ var optimist = require('optimist')
 
 var couchjs = require('./couchjs')
 var console = require('./console')
+var LineStream = require('./stream')
 
 var INPUT = { 'waiting': false
             , 'queue'  : []
@@ -54,10 +55,12 @@ function main() {
     if(er)
       throw er
 
-    process.stdin.setEncoding('utf8')
-    process.stdin.on('data', couchjs.stdin)
-    process.stdin.resume()
+    var stdin = new LineStream
+    stdin.on('data', couchjs.stdin)
 
+    process.stdin.setEncoding('utf8')
+    process.stdin.pipe(stdin)
+    process.stdin.resume()
 
     ; [Error, Function].forEach(function(type) {
       type.prototype.toSource = type.prototype.toSource || toSource
