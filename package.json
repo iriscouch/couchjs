@@ -10,6 +10,7 @@
 , "bin": "./cli.js"
 
 , "dependencies": { "optimist": "~0.3.4"
+                  , "fibers"  : "~1.0.0"
                   , "defaultable": "~0.7.2"
                   }
 
