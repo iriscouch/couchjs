@@ -20,14 +20,13 @@ module.exports = { 'print'   : print
                  , 'gc'      : gc
                  }
 
-module.exports.readline.async = readline_async
 
 var Fiber = require('fibers')
 
 var XML = require('./xml')
 var log = require('./console').log
 
-var INPUT = {'queue':[], 'waiting':[]}
+var INPUT = {'queue':[], 'waiting':null}
 
 
 function print(line) {
@@ -43,22 +42,11 @@ function print(line) {
 }
 
 function stdin(line) {
-  log('STDIN: %s', line.trim())
-
-  var waiter = INPUT.waiting.shift()
-  if(waiter)
-    return waiter(null, line)
-
-  INPUT.queue.push(line)
-}
-
-
-function readline_async(callback) {
-  var line = INPUT.queue.shift()
-  if(line)
-    return callback(null, line)
-
-  INPUT.waiting.push(callback)
+  console.log('STDIN: %s', line.trim())
+  if(INPUT.waiting)
+    INPUT.waiting.run(line)
+  else
+    INPUT.queue.push(line)
 }
 
 function readline() {
