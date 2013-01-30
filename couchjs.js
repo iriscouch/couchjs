@@ -20,8 +20,6 @@ module.exports = { 'print'   : print
                  }
 
 
-var Fiber = require('fibers')
-
 var XML = require('./xml')
 var console = require('./console')
 
@@ -49,15 +47,16 @@ function stdin(line) {
 }
 
 function readline() {
-  var line = INPUT.queue.shift()
-  if(line)
-    return line
-
-  INPUT.waiting = Fiber.current
-  line = Fiber.yield()
-  INPUT.waiting = null
-
-  return line
+  throw new Error('Synchronous readline() not supported')
+//  var line = INPUT.queue.shift()
+//  if(line)
+//    return line
+//
+//  INPUT.waiting = Fiber.current
+//  line = Fiber.yield()
+//  INPUT.waiting = null
+//
+//  return line
 }
 
 
