@@ -70,10 +70,10 @@ function main() {
       type.prototype.toString = type.prototype.toString || toSource
     })
 
-    var main_func = Function(['print', 'readline', 'evalcx', 'gc'], body)
+    var main_func = Function(['print', 'readline', 'evalcx', 'gc', 'quit'], body)
 
     log('Call main')
-    main_func(couchjs.print, couchjs.readline, couchjs.evalcx, couchjs.gc)
+    main_func(couchjs.print, couchjs.readline, couchjs.evalcx, couchjs.gc, couchjs.quit)
   })
 }
 

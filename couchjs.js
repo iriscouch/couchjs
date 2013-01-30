@@ -16,6 +16,7 @@ module.exports = { 'print'   : print
                  , 'readline': readline
                  , 'stdin'   : stdin
                  , 'evalcx'  : evalcx
+                 , 'quit'    : quit
                  , 'gc'      : gc
                  }
 
@@ -96,6 +97,14 @@ function evalcx(source, sandbox) {
   }
 
   return func
+}
+
+function quit(code) {
+  code = code || 1
+  if(code < 0)
+    code = -code
+
+  process.exit(code)
 }
 
 function gc() { }
