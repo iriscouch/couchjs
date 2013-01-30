@@ -22,12 +22,22 @@ var Fiber = require('fibers')
 var optimist = require('optimist')
 
 var couchjs = require('./couchjs')
-var console = require('./console')
 var LineStream = require('./stream')
+
+var c0nsole = console
+console = require('./console')
 
 var INPUT = { 'waiting': false
             , 'queue'  : []
             }
+
+
+var opts = optimist.boolean(['h', 'V', 'H'])
+                   .describe({ 'h': 'display a short help message and exit'
+                             , 'V': 'display version information and exit'
+                             , 'H': 'enable couchjs cURL bindings (not implemented)'
+                             })
+                   .usage('$0 <path to main.js>')
 
 
 function toSource() {
@@ -41,14 +51,10 @@ function toSource() {
 }
 
 function main() {
-  var argv = optimist.boolean(['h', 'V', 'H'])
-                     .describe({ 'h': 'display a short help message and exit'
-                               , 'V': 'display version information and exit'
-                               , 'H': 'enable couchjs cURL bindings (not implemented)'
-                               })
-                     .argv
+  var main_js = opts.argv._[0]
+  if(!main_js)
+    return c0nsole.error(opts.help())
 
-  var main_js = argv._[0]
   console.log('couchjs %s: %s', process.pid, main_js)
 
   fs.readFile(main_js, 'utf8', function(er, body) {
