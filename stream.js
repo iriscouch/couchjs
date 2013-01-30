@@ -28,6 +28,13 @@ function LineStream () {
   self.writable = true
 
   self.buffer = ''
+  self.downstream = null
+
+  self.on('pipe', function(upstream) {
+    upstream.on('end', function(data, encoding) {
+      self.emit('end', data, encoding)
+    })
+  })
 }
 
 
