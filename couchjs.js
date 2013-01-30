@@ -70,6 +70,8 @@ function evalcx(source, sandbox) {
     return sandbox
 
   // source might be "function(doc) { emit(doc._id, 1) }"
+  source = source.replace(/;+$/, '')
+
   var func_arg_names = ['XML']
     , func_arg_vals  = [XML]
     , func_src = 'return (' + source + ')'
