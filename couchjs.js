@@ -22,6 +22,8 @@ module.exports = { 'print'   : print
 
 module.exports.readline.async = readline_async
 
+var Fiber = require('fibers')
+
 var XML = require('./xml')
 var log = require('./console').log
 
@@ -60,8 +62,15 @@ function readline_async(callback) {
 }
 
 function readline() {
-  var er = new Error('Synchronous readline() not supported')
-  throw ['fatal', 'io_error', er.stack]
+  var line = INPUT.queue.shift()
+  if(line)
+    return line
+
+  INPUT.waiting = Fiber.current
+  line = Fiber.yield()
+  INPUT.waiting = null
+
+  return line
 }
 
 

@@ -18,6 +18,7 @@
 
 var fs = require('fs')
 var util = require('util')
+var Fiber = require('fibers')
 var optimist = require('optimist')
 
 var couchjs = require('./couchjs')
@@ -73,7 +74,7 @@ function main() {
     var main_func = Function(['print', 'readline', 'evalcx', 'gc', 'quit'], body)
 
     log('Call main')
-    main_func(couchjs.print, couchjs.readline, couchjs.evalcx, couchjs.gc, couchjs.quit)
+    Fiber(function() { main_func(couchjs.print, couchjs.readline, couchjs.evalcx, couchjs.gc) }).run()
   })
 }
 
