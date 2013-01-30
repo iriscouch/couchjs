@@ -30,7 +30,7 @@ var INPUT = {'queue':[], 'waiting':null}
 
 
 function print(line) {
-  log('STDOUT: %s', line)
+  log('STDOUT %s: %s', process.pid, line)
   process.stdout.write(line + '\n')
 
   try {
@@ -42,7 +42,7 @@ function print(line) {
 }
 
 function stdin(line) {
-  console.log('STDIN: %s', line.trim())
+  log('STDIN %s: %s', process.pid, line.trim())
   if(INPUT.waiting)
     INPUT.waiting.run(line)
   else
