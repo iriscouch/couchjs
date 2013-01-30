@@ -22,13 +22,13 @@ module.exports = { 'print'   : print
 
 
 var XML = require('./xml')
-var console = require('./console')
+var log = require('./console').log
 
 var INPUT = {'queue':[], 'waiting':null}
 
 
 function print(line) {
-  console.log('STDOUT: %s', line)
+  log('STDOUT: %s', line)
   process.stdout.write(line + '\n')
 
   try {
@@ -36,7 +36,7 @@ function print(line) {
   } catch(er) { return }
 
   if(line[0] == 'log')
-    console.log('LOG: %s', line[1])
+    log('LOG: %s', line[1])
 }
 
 function stdin(line) {
@@ -64,7 +64,7 @@ function readline() {
 
 function evalcx(source, sandbox) {
   sandbox = sandbox || {}
-  //console.log('evalcx in %j: %j', Object.keys(sandbox), source)
+  //log('evalcx in %j: %j', Object.keys(sandbox), source)
 
   if(source == '')
     return sandbox
@@ -85,14 +85,14 @@ function evalcx(source, sandbox) {
   try {
     var func_maker = Function(func_arg_names, func_src)
   } catch (er) {
-    console.log('Error making maker: %s', er.stack)
+    log('Error making maker: %s', er.stack)
     return sandbox
   }
 
   try {
     var func = func_maker.apply(null, func_arg_vals)
   } catch (er) {
-    console.log('Error running maker: %s', er.stack)
+    log('Error running maker: %s', er.stack)
     return sandbox
   }
 
