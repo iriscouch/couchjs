@@ -16,8 +16,12 @@ var fs = require('fs')
 var util = require('util')
 
 
-var console = module.exports = {}
+module.exports = {}
 module.exports.log = noop
+module.exports.debug = noop
+module.exports.info = noop
+module.exports.warn = noop
+module.exports.error = noop
 
 var LOG_PATH = '/tmp/couchjs.log'
   , stat = null
@@ -30,10 +34,17 @@ try {
 if(stat) {
   LOG = fs.createWriteStream(LOG_PATH, {'flags':'a'})
 
-  console.log = log
+  module.exports.log = log
+  module.exports.debug = log
+  module.exports.info = log
+  module.exports.warn = log
+  module.exports.error = log
 
-  process.on('exit', on_exit)
-  process.on('uncaughtException', on_exit)
+  process.on('exit', function() {
+    module.exports.log('Exit %d', process.pid)
+  })
+
+  process.on('uncaughtException', on_err)
 }
 
 function log() {
@@ -41,13 +52,12 @@ function log() {
   LOG.write(str + '\n')
 }
 
-function on_exit(er) {
-  if(er)
-    console.log('Error %d: %s', process.pid, er.stack)
-  else
-    console.log('Exit %d', process.pid)
+function on_err(er) {
+  if(er.stack)
+    er = ['fatal', 'unknown_error', er.stack]
 
-  LOG.end()
+  process.stdout.write(JSON.stringify(er) + '\n')
+  process.exit(1)
 }
 
 function noop() {}

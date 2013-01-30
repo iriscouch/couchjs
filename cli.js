@@ -22,9 +22,7 @@ var optimist = require('optimist')
 
 var couchjs = require('./couchjs')
 var LineStream = require('./stream')
-
-var c0nsole = console
-console = require('./console')
+var log = require('./console').log
 
 var INPUT = { 'waiting': false
             , 'queue'  : []
@@ -52,9 +50,9 @@ function toSource() {
 function main() {
   var main_js = opts.argv._[0]
   if(!main_js)
-    return c0nsole.error(opts.help())
+    return console.error(opts.help())
 
-  console.log('couchjs %s: %s', process.pid, main_js)
+  log('couchjs %s: %s', process.pid, main_js)
 
   fs.readFile(main_js, 'utf8', function(er, body) {
     if(er)
@@ -74,7 +72,7 @@ function main() {
 
     var main_func = Function(['print', 'readline', 'evalcx', 'gc'], body)
 
-    console.log('Call main')
+    log('Call main')
     main_func(couchjs.print, couchjs.readline, couchjs.evalcx, couchjs.gc)
   })
 }
