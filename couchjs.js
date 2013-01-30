@@ -47,7 +47,8 @@ function stdin(line) {
 }
 
 function readline() {
-  throw new Error('Synchronous readline() not supported')
+  var er = new Error('Synchronous readline() not supported')
+  throw ['fatal', 'io_error', er.stack]
 //  var line = INPUT.queue.shift()
 //  if(line)
 //    return line
