@@ -54,6 +54,8 @@ function main() {
     return console.error(opts.help())
 
   log('couchjs %s: %s', process.pid, main_js)
+  if(process.env.COUCHJS_DEBUG)
+    process.kill(process.pid, 'SIGUSR1')
 
   fs.readFile(main_js, 'utf8', function(er, body) {
     if(er)
