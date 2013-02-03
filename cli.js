@@ -25,10 +25,6 @@ var couchjs = require('./couchjs')
 var LineStream = require('./stream')
 var log = require('./console').log
 
-var INPUT = { 'waiting': false
-            , 'queue'  : []
-            }
-
 
 var opts = optimist.boolean(['h', 'V', 'H'])
                    .describe({ 'h': 'display a short help message and exit'
@@ -37,16 +33,6 @@ var opts = optimist.boolean(['h', 'V', 'H'])
                              })
                    .usage('$0 <path to main.js>')
 
-
-function toSource() {
-  if(typeof this == 'function')
-    return '' + this
-
-  if(this instanceof Error)
-    return this.stack
-
-  return util.inspect(this)
-}
 
 function main() {
   var main_js = opts.argv._[0]
@@ -67,11 +53,6 @@ function main() {
     process.stdin.setEncoding('utf8')
     process.stdin.pipe(stdin)
     process.stdin.resume()
-
-    ; [Error, Function].forEach(function(type) {
-      type.prototype.toSource = type.prototype.toSource || toSource
-      type.prototype.toString = type.prototype.toString || toSource
-    })
 
     var main_func = Function(['print', 'readline', 'evalcx', 'gc', 'quit'], body)
 

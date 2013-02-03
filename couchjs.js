@@ -28,6 +28,11 @@ var log = require('./console').log
 
 var INPUT = {'queue':[], 'waiting':null}
 
+Error.prototype.toSource = Error.prototype.toSource || toSource
+Error.prototype.toString = Error.prototype.toString || toSource
+Function.prototype.toSource = Function.prototype.toSource || toSource
+Function.prototype.toString = Function.prototype.toString || toSource
+
 
 function print(line) {
   log('STDOUT %s: %s', process.pid, line)
@@ -110,3 +115,14 @@ function quit(code) {
 }
 
 function gc() { }
+
+
+function toSource() {
+  if(typeof this == 'function')
+    return '' + this
+
+  if(this instanceof Error)
+    return this.stack
+
+  return util.inspect(this)
+}
