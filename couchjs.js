@@ -21,6 +21,7 @@ module.exports = { 'print'   : print
                  }
 
 
+var vm = require('vm')
 var Fiber = require('fibers')
 
 var XML = require('./xml')
@@ -77,29 +78,15 @@ function evalcx(source, sandbox) {
   // source might be "function(doc) { emit(doc._id, 1) }"
   source = source.replace(/;+$/, '')
 
-  var func_arg_names = ['XML']
-    , func_arg_vals  = [XML]
-    , func_src = 'return (' + source + ')'
-
-  Object.keys(sandbox).forEach(function(key) {
-    if(typeof sandbox[key] != 'function')
-      return
-
-    func_arg_names.push(key)
-    func_arg_vals.push(sandbox[key])
-  })
+  sandbox.XML = sandbox.XML || XML
+  source = '(' + source + ')'
 
   try {
-    var func_maker = Function(func_arg_names, func_src)
+    var filename = '_couchdb:debug.js'
+    var script = vm.createScript(source, filename)
+    var func = script.runInNewContext(sandbox)
   } catch (er) {
-    log('Error making maker: %s', er.stack)
-    return sandbox
-  }
-
-  try {
-    var func = func_maker.apply(null, func_arg_vals)
-  } catch (er) {
-    log('Error running maker: %s', er.stack)
+    log('Error making code: %s', er.stack)
     return sandbox
   }
 

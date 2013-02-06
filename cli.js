@@ -23,6 +23,7 @@ var optimist = require('optimist')
 
 var couchjs = require('./couchjs')
 var LineStream = require('./stream')
+var inspector = require('./inspector')
 var log = require('./console').log
 
 
@@ -43,6 +44,16 @@ function main() {
   if(process.env.COUCHJS_DEBUG_PORT) {
     process.debugPort = +process.env.COUCHJS_DEBUG_PORT
     process.kill(process.pid, 'SIGUSR1')
+
+    ; ['log', 'info', 'warn', 'error', 'fatal', 'debug'].forEach(function(k) {
+      console[k] = log
+    })
+    inspector(process.debugPort, process.debugPort + 1)
+//    setTimeout(function() {
+//      log('debugtger')
+//      debugger
+//      log('Done waiting')
+//    }, 1000)
   }
 
   fs.readFile(main_js, 'utf8', function(er, body) {
