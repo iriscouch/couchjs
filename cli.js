@@ -23,7 +23,7 @@ var optimist = require('optimist')
 
 var couchjs = require('./couchjs')
 var LineStream = require('./stream')
-var inspector = require('./inspector')
+//var inspector = require('./inspector')
 var log = require('./console').log
 
 
@@ -48,7 +48,9 @@ function main() {
     ; ['log', 'info', 'warn', 'error', 'fatal', 'debug'].forEach(function(k) {
       console[k] = log
     })
-    inspector(process.debugPort, process.debugPort + 1)
+    //inspector(process.debugPort, process.debugPort + 1)
+    console.log('You must run:\n')
+    console.log('debugPort=%s webPort=%s node-inspector', process.debugPort, process.debugPort + 1)
 //    setTimeout(function() {
 //      log('debugtger')
 //      debugger
