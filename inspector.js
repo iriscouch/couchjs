@@ -86,4 +86,7 @@ function main() {
   })
 
   server.start({'webPort':webPort, 'debugPort':debugPort})
+  process.on('uncaughtException', function(er) {
+    console.log('Error:\n%s', er.stack)
+  })
 }

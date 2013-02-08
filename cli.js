@@ -61,6 +61,10 @@ function main() {
     log('Call main')
     Fiber(function() { main_func(couchjs.print, couchjs.readline, couchjs.evalcx, couchjs.gc) }).run()
   })
+
+  process.on('uncaughtException', function(er) {
+    log('Error:\n%s', er.stack)
+  })
 }
 
 if(require.main === module)
