@@ -82,7 +82,8 @@ function evalcx(source, sandbox) {
   source = '(' + source + ')'
 
   try {
-    var filename = '_couchdb:debug.js'
+    var id = Math.floor(Math.random() * 1000*1000)
+    var filename = '_couchdb:' + id + '.js'
     var script = vm.createScript(source, filename)
     var func = script.runInNewContext(sandbox)
   } catch (er) {

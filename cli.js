@@ -20,10 +20,11 @@ var fs = require('fs')
 var util = require('util')
 var Fiber = require('fibers')
 var optimist = require('optimist')
+var child_process = require('child_process')
 
 var couchjs = require('./couchjs')
 var LineStream = require('./stream')
-//var inspector = require('./inspector')
+var inspector = require('./inspector')
 var log = require('./console').log
 
 
@@ -41,22 +42,8 @@ function main() {
     return console.error(opts.help())
 
   log('couchjs %s: %s', process.pid, main_js)
-  if(process.env.COUCHJS_DEBUG_PORT) {
-    process.debugPort = +process.env.COUCHJS_DEBUG_PORT
-    process.kill(process.pid, 'SIGUSR1')
-
-    ; ['log', 'info', 'warn', 'error', 'fatal', 'debug'].forEach(function(k) {
-      console[k] = log
-    })
-    //inspector(process.debugPort, process.debugPort + 1)
-    console.log('You must run:\n')
-    console.log('debugPort=%s webPort=%s node-inspector', process.debugPort, process.debugPort + 1)
-//    setTimeout(function() {
-//      log('debugtger')
-//      debugger
-//      log('Done waiting')
-//    }, 1000)
-  }
+  if(process.env.COUCHJS_DEBUG_PORT)
+    inspector(+process.env.COUCHJS_DEBUG_PORT)
 
   fs.readFile(main_js, 'utf8', function(er, body) {
     if(er)
