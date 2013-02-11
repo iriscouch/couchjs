@@ -52,6 +52,10 @@ function main() {
 
     var stdin = new LineStream
     stdin.on('data', couchjs.stdin)
+    stdin.on('end', function() {
+      log('Terminate; connection to parent closed')
+      process.exit(0)
+    })
 
     process.stdin.setEncoding('utf8')
     process.stdin.pipe(stdin)
