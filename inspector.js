@@ -64,7 +64,7 @@ function watch_inspector(child) {
   })
 
   process.on('exit', function() {
-    console.log('Kill inspector upon exit: %d', child.pid)
+    log('Kill inspector upon exit: %d', child.pid)
     process.kill(child.pid, 'SIGTERM')
   })
 }
