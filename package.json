@@ -1,7 +1,7 @@
 { "name": "couchjs"
 , "description": "Drop-in replacement for CouchDB JavaScript view server"
 , "keywords": [ "couchdb", "couchjs" ]
-, "version": "0.3.1"
+, "version": "0.3.2"
 , "author": "Jason Smith <jhs@iriscouch.com> (http://www.iriscouch.com)"
 , "repository": { "type":"git", "url":"https://github.com/iriscouch/couchjs" }
 
