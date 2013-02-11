@@ -9,9 +9,12 @@
 , "main": "./couchjs.js"
 , "bin": "./cli.js"
 
+, "bundledDependencies": ["node-inspector"]
+
 , "dependencies": { "optimist": "~0.3.4"
                   , "fibers"  : "~1.0.0"
                   , "defaultable": "~0.7.2"
+                  , "node-inspector": "0.2.0beta2"
                   }
 
 , "devDependencies": { "tap": "~0.2.5"
