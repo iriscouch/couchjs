@@ -23,6 +23,7 @@ var optimist = require('optimist')
 var child_process = require('child_process')
 
 var couchjs = require('./couchjs')
+var package_json = require('./package.json')
 var LineStream = require('./stream')
 var inspector = require('./inspector')
 var log = require('./console').log
@@ -41,7 +42,7 @@ function main() {
   if(!main_js)
     return console.error(opts.help())
 
-  log('couchjs %s: %s', process.pid, main_js)
+  log('couchjs/%s %s: %s', package_json.version, process.pid, main_js)
   if(process.env.COUCHJS_DEBUG_PORT)
     inspector(+process.env.COUCHJS_DEBUG_PORT)
 
