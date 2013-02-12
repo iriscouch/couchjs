@@ -94,6 +94,11 @@ function git(env) {
     var server = http.createServer(function(req, res) {
       req.pause()
       auth_req(req, function(er, userCtx) {
+        if(er && er.statusCode) {
+          res.writeHead(er.statusCode, er.headers)
+          return res.end(er.body)
+        }
+
         if(er) {
           couch.log('Bad req %s: %s', req.url, er.message)
           return res.end()
@@ -102,7 +107,14 @@ function git(env) {
         var roles = userCtx.roles || []
         if(!~ roles.indexOf('_admin')) {
           couch.log('Not admin: %s', req.url)
-          return res.end()
+          res.writeHead(401, 'Unauthorized', {'content-type':'application/json'})
+          return res.end('{"error":"not_authorized"}\n')
+        }
+
+        couch.log('Handle Git: %j', req.url)
+        if(! req.url.match(/^\/_nodejs\/_git(\/|$)/)) {
+          res.writeHead(404, 'Not found', {'content-type':'application/json'})
+          return res.end('{"error":"not_found"}\n')
         }
 
         couch.log('Handle Git: %s', req.url)
@@ -127,14 +139,19 @@ function auth(user, pass, callback) {
     url = URL.format(url)
   }
 
-  couch.log('auth: %j', url)
+  //couch.log('auth: %j', url)
   request({'url':url, 'json':true}, function(er, res) {
-    couch.log('auth result: %j', res.body)
+    //couch.log('auth result: %j', res.body)
     if(er)
       return callback(er)
 
-    if(res.statusCode != 200)
-      return callback(new Error('Bad status '+res.statusCode+' for auth: ' + res.body))
+    if(res.statusCode != 200) {
+      er = new Error('Bad status '+res.statusCode+' for auth: ' + res.body)
+      er.statusCode = res.statusCode
+      er.body = JSON.stringify(res.body) + '\n'
+      er.headers = res.headers
+      return callback(er)
+    }
 
     return callback(null, res.body.userCtx)
   })
