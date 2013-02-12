@@ -92,6 +92,9 @@ function git(env) {
     })
 
     var server = http.createServer(function(req, res) {
+      if(! req.url.match(/^\/_nodejs\/_git(\/|$)/))
+        return handle_http(req, res)
+
       req.pause()
       auth_req(req, function(er, userCtx) {
         if(er && er.statusCode) {
@@ -112,12 +115,6 @@ function git(env) {
         }
 
         couch.log('Handle Git: %j', req.url)
-        if(! req.url.match(/^\/_nodejs\/_git(\/|$)/)) {
-          res.writeHead(404, 'Not found', {'content-type':'application/json'})
-          return res.end('{"error":"not_found"}\n')
-        }
-
-        couch.log('Handle Git: %s', req.url)
         repos.handle(req, res)
         req.resume()
       })
@@ -126,6 +123,11 @@ function git(env) {
     couch.log('Git listen: %s', GIT_PORT)
     server.listen(GIT_PORT)
   })
+}
+
+function handle_http(req, res) {
+  res.writeHead(200, 'OK', {'content-type':'application/json'})
+  res.end('{"ok":true, "hello":"world"}\n')
 }
 
 function auth(user, pass, callback) {
