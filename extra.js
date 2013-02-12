@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // Copyright 2011 Iris Couch
 //
 //    Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +16,7 @@
 module.exports = main
 
 var util = require('util')
+var optimist = require('optimist')
 
 var console = require('./console')
 
@@ -22,7 +24,13 @@ var couch = { 'log': mk_couch_log('info')
             }
 
 
+var opts = optimist.usage('$0')
+
+
 function main() {
+  if(opts.argv.help)
+    return console.log(opts.help())
+
   console.log('Extra CouchDB daemon: %s', process.pid)
   couch.log('CouchDB daemon: %s', process.pid)
 
@@ -47,3 +55,7 @@ function mk_couch_log(level) {
     process.stdout.write(msg + '\n')
   }
 }
+
+
+if(require.main === module)
+  main()
