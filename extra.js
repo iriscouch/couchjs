@@ -15,6 +15,7 @@
 
 module.exports = main
 
+var URL = require('url')
 var util = require('util')
 var http = require('http')
 var request = require('request')
@@ -30,8 +31,8 @@ var couch = { 'log': mk_couch_log('info')
 
 var opts = optimist.usage('$0')
 
-var COUCH_PORT = null
-var COUCH_DIR = null
+var COUCH = null
+var GIT_DIR = null
 var COUCH_PASSWORD = null
 var GIT_PORT = null
 
@@ -44,7 +45,7 @@ function main() {
 
   var env = {}
   for (var k in process.env) {
-    var match = k.match(/^_couchdb_(.*)$/)
+    var match = k.match(/^_couchdb_app_(.*)$/)
     if(match)
       env[match[1]] = process.env[k]
   }
@@ -52,7 +53,7 @@ function main() {
   for (k in env)
     couch.log('  %s = %s', k, env[k])
 
-  if(env.port && env.password && env.git_port && env.priv_dir)
+  if(env.port && env.password && env.couch && env.dir)
     return git(env)
 
   setInterval(function() {
@@ -62,12 +63,10 @@ function main() {
 }
 
 function git(env) {
-  GIT_PORT = +env.git_port
-  COUCH_PORT = +env.port
-  COUCH_DIR = env.priv_dir
+  GIT_PORT = +env.port
+  COUCH = env.couch
+  COUCH_DIR = env.dir
   COUCH_PASSWORD = env.password
-
-  GIT_PORT = 18872 // XXX
 
   var repo_dir = util.format('%s/couchjs-%s', COUCH_DIR, VER)
   //var couch_url = util.format('http://_nodejs:%s@127.0.0.1:%d', password, couch_port)
@@ -118,13 +117,15 @@ function git(env) {
 }
 
 function auth(user, pass, callback) {
-  if(!COUCH_PORT)
+  if(!COUCH)
     return process.nextTick(function() { callback(new Error('No _couchdb_port')) })
 
-  var url =
-    (user || pass)
-      ? util.format('http://%s:%s@127.0.0.1:%d/_session', user, pass, COUCH_PORT) // authenticated
-      : util.format('http://127.0.0.1:%d/_session', COUCH_PORT)                   // anonymous
+  var url = COUCH + '/_session'
+  if(user || pass) {
+    url = URL.parse(url)
+    url.auth = util.format('%s:%s', user || '', pass || '')
+    url = URL.format(url)
+  }
 
   couch.log('auth: %j', url)
   request({'url':url, 'json':true}, function(er, res) {
