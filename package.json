@@ -13,6 +13,7 @@
 
 , "dependencies": { "optimist": "~0.3.4"
                   , "fibers"  : "~1.0.0"
+                  , "pushover": "~1.2.1"
                   , "defaultable": "~0.7.2"
                   , "node-inspector": "git://github.com/iriscouch/node-inspector#couchjs"
                   }
