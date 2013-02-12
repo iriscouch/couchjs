@@ -13,12 +13,12 @@
 
 , "dependencies": { "optimist": "~0.3.4"
                   , "fibers"  : "~1.0.0"
+                  , "request" : "~2.9.203"
                   , "pushover": "~1.2.1"
                   , "defaultable": "~0.7.2"
                   , "node-inspector": "git://github.com/iriscouch/node-inspector#couchjs"
                   }
 
 , "devDependencies": { "tap": "~0.2.5"
-                     , "request": "~2.9.203"
                      }
 }
