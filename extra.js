@@ -18,26 +18,32 @@ var util = require('util')
 
 var console = require('./console')
 
+var couch = { 'log': mk_couch_log('info')
+            }
+
 
 function main() {
   console.log('Extra CouchDB daemon: %s', process.pid)
+  couch.log('CouchDB daemon: %s', process.pid)
+
+  for (var k in process.env)
+    if(k.match(/^_couchdb_/))
+      couch.log('  %s -> %s', k, process.env[k])
+
   setInterval(function() {
     console.log('Still here')
-    couch_info('Still in couch')
-  }, 5000)
+    couch.log('Still in couch')
+  }, 60000)
 }
 
-function couch_debug() {
-  send_couch_log('debug', arguments)
-}
 
-function couch_info() {
-  send_couch_log('info', arguments)
-}
+function mk_couch_log(level) {
+  return logger
 
-function send_couch_log(level, args) {
-  var str = util.format.apply(util, args)
-  var msg = ['log', str, {'level':level}]
-  msg = JSON.stringify(msg) + "\n"
-  process.stdout.write(msg)
+  function logger() {
+    var str = util.format.apply(util, arguments)
+    var msg = ['log', str, {'level':level}]
+    msg = JSON.stringify(msg)
+    process.stdout.write(msg + '\n')
+  }
 }
