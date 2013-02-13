@@ -16,9 +16,11 @@
 module.exports = main
 
 var os = require('os')
+var fs = require('fs')
 var URL = require('url')
 var util = require('util')
 var http = require('http')
+var mkdirp = require('mkdirp')
 var request = require('request')
 var optimist = require('optimist')
 var pushover = require('pushover')
@@ -28,6 +30,8 @@ var console = require('./console')
 var VER = require('./package.json').version
 
 var couch = { 'log': mk_couch_log('info')
+            , 'warn' : mk_couch_log('warn')
+            , 'error': mk_couch_log('error')
             }
 
 
@@ -190,17 +194,50 @@ function auth_req(req, callback) {
 function publish(push) {
   var script = __dirname + '/checkout.sh'
   var repo = COUCH_DIR + '/' + push.repo
-  var args = [script, repo, push.commit]
-  var opts = { 'cwd':os.tmpDir(), 'stdio':'pipe' }
 
-  var child = child_process.spawn('bash', args, opts)
+  var id = Math.floor(Math.random() * 1000 * 1000)
+  var work = util.format('%s/%s/%s', COUCH_DIR, push.commit, id)
 
-  child.stdout.on('data', function(x) { couch.log('STDOUT: %s', x.toString().trim()) })
-  child.stderr.on('data', function(x) { couch.log('STDERR: %s', x.toString().trim()) })
+  mkdirp(work, function(er) {
+    if(er) {
+      couch.error('Failed to make working dir: %s', work)
+      throw er
+    }
 
-  child.on('exit', function(code) {
-    couch.log('EXIT: %j', code)
+    checkout()
   })
+
+  function checkout() {
+    var args = [script, repo, push.commit]
+    var opts = { 'cwd':work, 'stdio':'pipe' }
+
+    var child = child_process.spawn('bash', args, opts)
+
+    var output = []
+    child.stdout.on('data', function(x) { output.push(('OUT ' + x).trim()) })
+    child.stderr.on('data', function(x) { output.push(('ERR ' + x).trim()) })
+
+    child.on('exit', function(code) {
+      if(code !== 0) {
+        couch.error('Bad checkout: %d', code)
+        output.forEach(function(line) {
+          couch.error(line)
+        })
+
+        throw new Error('Bad checkout')
+      }
+
+      couch.log('Checked out push: %s', work)
+      fs.readFile(work+'/package.json', 'utf8', function(er, body) {
+        if(er)
+          throw er
+
+        body = JSON.parse(body)
+        if(!body.couchdb)
+          return couch.warn('No "couchdb" value in pushed package.json')
+      })
+    })
+  }
 }
 
 
@@ -210,6 +247,9 @@ function publish(push) {
 //
 
 function mk_couch_log(level) {
+  if(level == 'warn')
+    level = 'error'
+
   return logger
 
   function logger() {

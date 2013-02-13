@@ -24,15 +24,9 @@ if [ -z "$commit" ]; then
   exit 1
 fi
 
-id="$commit.$$"
-id="$commit" # XXX
+echo "Clone $repo:$commit to $(pwd)"
 
 set -e
-set -x
-
-rm -rf "$id"
-mkdir -p "$id"
-cd "$id"
 
 git clone "$repo" .
 git checkout "$commit"
