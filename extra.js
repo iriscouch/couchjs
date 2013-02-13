@@ -41,6 +41,7 @@ var COUCH = null
 var GIT_DIR = null
 var COUCH_PASSWORD = null
 var GIT_PORT = null
+var APPLICATION = null
 
 function main() {
   if(opts.argv.help)
@@ -136,8 +137,12 @@ function git(env) {
 }
 
 function handle_http(req, res) {
+  if(APPLICATION)
+    return APPLICATION(req, res)
+
   res.writeHead(200, 'OK', {'content-type':'application/json'})
-  res.end('{"ok":true, "hello":"world"}\n')
+  var body = {'ok':true, 'description':'No-op Node.js-CouchDB application'}
+  return res.end(JSON.stringify(body) + '\n')
 }
 
 function auth(user, pass, callback) {
@@ -235,11 +240,29 @@ function publish(push) {
         body = JSON.parse(body)
         if(!body.couchdb)
           return couch.warn('No "couchdb" value in pushed package.json')
+
+        run_app(work, body)
       })
     })
   }
 }
 
+
+function run_app(work_dir, pkg) {
+  var couch_mod = pkg.couchdb
+  couch.log('Run app in %s: %j', work_dir, couch_mod)
+
+  var mod_path = util.format('%s/%s', work_dir, couch_mod)
+  try {
+    var ok = require.resolve(mod_path)
+  } catch (er) {
+    return couch.error('Bad module path: %s', mod_path)
+  }
+
+  couch_mod = require(mod_path)
+  APPLICATION = couch_mod
+  couch.log('Installed CouchDB application')
+}
 
 
 //
