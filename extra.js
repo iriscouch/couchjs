@@ -15,12 +15,14 @@
 
 module.exports = main
 
+var os = require('os')
 var URL = require('url')
 var util = require('util')
 var http = require('http')
 var request = require('request')
 var optimist = require('optimist')
 var pushover = require('pushover')
+var child_process = require('child_process')
 
 var console = require('./console')
 var VER = require('./package.json').version
@@ -65,10 +67,9 @@ function main() {
 function git(env) {
   GIT_PORT = +env.port
   COUCH = env.couch
-  COUCH_DIR = env.dir
+  COUCH_DIR = util.format('%s/couchjs-%s', env.dir, VER)
   COUCH_PASSWORD = env.password
 
-  var repo_dir = util.format('%s/couchjs-%s', COUCH_DIR, VER)
   //var couch_url = util.format('http://_nodejs:%s@127.0.0.1:%d', password, couch_port)
   //couch.log('couch url %j', couch_url)
 
@@ -80,10 +81,15 @@ function git(env) {
     if(userCtx.name != '_nodejs' || !~roles.indexOf('_admin'))
       throw new Error('Not admin: ' + JSON.stringify(res.body.userCtx))
 
-    var repos = pushover(repo_dir)
+    var repos = pushover(COUCH_DIR)
     repos.on('push', function(push) {
-      couch.log('push %j/%j + (%j)', push.repo, push.commit, push.branch)
+      couch.log('Push %s/%s: %s', push.repo, push.commit, push.branch)
       push.accept()
+      //couch.log('Response: %j', Object.keys(push.response))
+      push.response.on('finish', function() {
+        //couch.log('Finished!')
+        publish(push)
+      })
     })
 
     repos.on('fetch', function(fetch) {
@@ -178,6 +184,23 @@ function auth_req(req, callback) {
     return callback(new Error('Bad auth string: ' + auth_str))
 
   auth(match[1], match[2], callback)
+}
+
+
+function publish(push) {
+  var script = __dirname + '/checkout.sh'
+  var repo = COUCH_DIR + '/' + push.repo
+  var args = [script, repo, push.commit]
+  var opts = { 'cwd':os.tmpDir(), 'stdio':'pipe' }
+
+  var child = child_process.spawn('bash', args, opts)
+
+  child.stdout.on('data', function(x) { couch.log('STDOUT: %s', x.toString().trim()) })
+  child.stderr.on('data', function(x) { couch.log('STDERR: %s', x.toString().trim()) })
+
+  child.on('exit', function(code) {
+    couch.log('EXIT: %j', code)
+  })
 }
 
 
