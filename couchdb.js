@@ -17,8 +17,8 @@ var express = require('express')
 var app = express()
 module.exports = app
 
-app.get('/', function(req, res) {
-  res.send('Hello from express!\n')
+app.get('*', function(req, res) {
+  res.send('Hello: ' + req.url + '\n')
 })
 
 if(require.main === module) {
