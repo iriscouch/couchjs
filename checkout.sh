@@ -30,3 +30,5 @@ set -e
 
 git clone "$repo" .
 git checkout "$commit"
+
+npm install --production
