@@ -122,7 +122,7 @@ function git(env) {
 
         var roles = userCtx.roles || []
         if(!~ roles.indexOf('_admin')) {
-          couch.log('Not admin: %s', req.url)
+          couch.log('Not admin: %s, %j', req.url, userCtx)
           res.writeHead(401, 'Unauthorized', {'content-type':'application/json'})
           return res.end('{"error":"not_authorized"}\n')
         }
@@ -139,8 +139,11 @@ function git(env) {
 
 function handle_http(req, res) {
   if(! APPLICATION) {
-    res.writeHead(200, 'OK', {'content-type':'application/json'})
-    var body = {'ok':true, 'description':'No-op Node.js-CouchDB application'}
+    var headers = { 'content-type': 'application/json'
+                  , 'server': 'NodeJS-CouchDB/'+VER
+                  }
+    res.writeHead(200, 'OK', headers)
+    var body = {'ok':true}
     return res.end(JSON.stringify(body) + '\n')
   }
 
