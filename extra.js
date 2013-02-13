@@ -126,7 +126,7 @@ function git(env) {
           return res.end('{"error":"not_authorized"}\n')
         }
 
-        couch.log('Handle Git: %j', req.url)
+        //couch.log('Handle Git: %j', req.url)
         repos.handle(req, res)
         req.resume()
       })
