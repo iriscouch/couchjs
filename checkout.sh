@@ -31,4 +31,6 @@ set -e
 git clone "$repo" .
 git checkout "$commit"
 
-npm install --production
+if [ -z "$skip_npm_install" ]; then
+  npm install --production
+fi
