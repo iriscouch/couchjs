@@ -12,6 +12,7 @@
 , "bundledDependencies": ["node-inspector"]
 
 , "dependencies": { "optimist": "~0.3.4"
+                  , "mkdirp"  : "~0.3.4"
                   , "fibers"  : "~1.0.0"
                   , "request" : "~2.9.203"
                   , "pushover": "~1.2.1"
