@@ -32,6 +32,7 @@ var VER = require('./package.json').version
 var couch = { 'log': mk_couch_log('info')
             , 'warn' : mk_couch_log('warn')
             , 'error': mk_couch_log('error')
+            , 'debug': mk_couch_log('debug')
             }
 
 
@@ -219,8 +220,17 @@ function publish(push) {
     var child = child_process.spawn('bash', args, opts)
 
     var output = []
-    child.stdout.on('data', function(x) { output.push(('OUT ' + x).trim()) })
-    child.stderr.on('data', function(x) { output.push(('ERR ' + x).trim()) })
+
+    child.stdout.on('data', function(x) {
+      var msg = util.format('OUT %s', x.toString().trim())
+      couch.debug(msg)
+      output.push(msg)
+    })
+    child.stderr.on('data', function(x) {
+      var msg = util.format('ERR %s', x.toString().trim())
+      couch.debug(msg)
+      output.push(msg)
+    })
 
     child.on('exit', function(code) {
       if(code !== 0) {
