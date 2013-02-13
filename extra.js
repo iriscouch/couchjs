@@ -20,6 +20,7 @@ var fs = require('fs')
 var URL = require('url')
 var util = require('util')
 var http = require('http')
+var async = require('async')
 var mkdirp = require('mkdirp')
 var request = require('request')
 var optimist = require('optimist')
@@ -259,10 +260,19 @@ function publish(push) {
 
 
 function run_app(work_dir, pkg) {
-  var couch_mod = pkg.couchdb
-  couch.log('Run app in %s: %j', work_dir, couch_mod)
+  var vhosts = []
+    , main = null
 
-  var mod_path = util.format('%s/%s', work_dir, couch_mod)
+  if(typeof pkg.couchdb == 'string')
+    main = pkg.couchdb
+  else {
+    vhosts = pkg.couchdb.vhosts || []
+    main = pkg.couchdb.main
+  }
+
+  couch.log('Run app %s: %j', main, vhosts)
+
+  var mod_path = util.format('%s/%s', work_dir, main)
   try {
     var ok = require.resolve(mod_path)
   } catch (er) {
@@ -272,6 +282,34 @@ function run_app(work_dir, pkg) {
   couch_mod = require(mod_path)
   APPLICATION = couch_mod
   couch.log('Installed CouchDB application')
+
+  return async.forEach(vhosts, set_vhost, vhosts_set)
+
+  function set_vhost(vhost, to_async) {
+    var couch_url = URL.parse(COUCH)
+    couch_url.auth = '_nodejs:' + COUCH_PASSWORD
+    couch_url = URL.format(couch_url)
+    couch.log('couch_url: %j', couch_url)
+
+    var url = couch_url + '_config/vhosts/' + vhost
+    var body = '/_nodejs'
+    request.put({'url':url, 'json':body}, function(er, res) {
+      if(er)
+        return to_async(er)
+      if(res.statusCode != 200)
+        return to_async(new Error('Bad response '+res.statusCode+' to vhost: ' + vhost))
+
+      couch.log('Set vhost: %s', vhost)
+      return to_async()
+    })
+  }
+
+  function vhosts_set(er) {
+    if(er)
+      throw er
+
+    couch.log('Set %d vhosts for CouchDB application', vhosts.length)
+  }
 }
 
 
