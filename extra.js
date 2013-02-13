@@ -60,7 +60,7 @@ function main() {
   }
 
   for (k in env)
-    couch.log('  %s = %s', k, env[k])
+    couch.debug('  %s = %s', k, env[k])
 
   if(env.port && env.password && env.couch && env.dir)
     return git(env)
