@@ -139,12 +139,20 @@ function git(env) {
 }
 
 function handle_http(req, res) {
-  if(APPLICATION)
-    return APPLICATION(req, res)
+  if(! APPLICATION) {
+    res.writeHead(200, 'OK', {'content-type':'application/json'})
+    var body = {'ok':true, 'description':'No-op Node.js-CouchDB application'}
+    return res.end(JSON.stringify(body) + '\n')
+  }
 
-  res.writeHead(200, 'OK', {'content-type':'application/json'})
-  var body = {'ok':true, 'description':'No-op Node.js-CouchDB application'}
-  return res.end(JSON.stringify(body) + '\n')
+  // Clean up the vhost changes.
+  var vhost_path = req.headers['x-couchdb-vhost-path']
+  if(vhost_path) {
+    req.url = vhost_path
+    delete req.headers['x-couchdb-vhost-path']
+  }
+
+  APPLICATION(req, res)
 }
 
 function auth(user, pass, callback) {
