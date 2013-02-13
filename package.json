@@ -7,8 +7,11 @@
 
 , "engines": { "node": ">= 0.8" }
 , "main": "./couchjs.js"
-, "couchdb": "./couchdb.js"
 , "bin": {"couchjs":"./cli.js", "couchjs-extra":"./extra.js"}
+
+, "couchdb": { "main":"./couchdb.js"
+             , "vhosts": ["127.0.0.1.xip.io"]
+             }
 
 , "bundledDependencies": ["node-inspector"]
 
