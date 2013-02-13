@@ -50,7 +50,7 @@ function main() {
     return console.log(opts.help())
 
   console.log('Extra CouchDB daemon: %s', process.pid)
-  couch.log('CouchDB daemon %s: %s', VER, process.pid)
+  couch.debug('CouchDB daemon %s: %s', VER, process.pid)
 
   var env = {}
   for (var k in process.env) {
@@ -133,7 +133,6 @@ function git(env) {
       })
     })
 
-    couch.log('Git listen: %s', GIT_PORT)
     server.listen(GIT_PORT)
   })
 }
