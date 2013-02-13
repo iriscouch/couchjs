@@ -7,6 +7,7 @@
 
 , "engines": { "node": ">= 0.8" }
 , "main": "./couchjs.js"
+, "couchdb": "./couchdb.js"
 , "bin": {"couchjs":"./cli.js", "couchjs-extra":"./extra.js"}
 
 , "bundledDependencies": ["node-inspector"]
