@@ -12,9 +12,16 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-module.exports = handle_http
+var express = require('express')
 
-function handle_http(req, res) {
-  res.writeHead(200)
-  res.end('Hello, world\n')
+var app = express()
+module.exports = app
+
+app.get('/', function(req, res) {
+  res.send('Hello from express!\n')
+})
+
+if(require.main === module) {
+  app.listen(3000)
+  console.log('Listening on :3000')
 }
