@@ -63,6 +63,9 @@ function main() {
       process.exit(0)
     })
 
+    // hack to switch to old mode now
+    process.stdin.on('data', function() {})
+
     process.stdin.setEncoding('utf8')
     process.stdin.pipe(stdin)
     process.stdin.resume()
