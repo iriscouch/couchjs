@@ -42,7 +42,6 @@ LineStream2.prototype._transform = function(message, encoding, done) {
     this.unshift(remainder)
 
   lines.forEach(function(line) {
-    console.log('Push: %j', line)
     self.push(line)
   })
 

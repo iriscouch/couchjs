@@ -56,6 +56,7 @@ function stdin(line) {
 }
 
 function readline() {
+  console.log('readline()')
   var line = INPUT.queue.shift()
   if(line)
     return line
