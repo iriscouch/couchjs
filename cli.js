@@ -56,8 +56,12 @@ function main() {
     if(er)
       throw er
 
-    var stdin = new LineStream
-    stdin.on('data', couchjs.stdin)
+    var stdin = new LineStream.v2
+    stdin.on('readable', function() {
+      var buf = stdin.read()
+      if(buf)
+        couchjs.stdin(buf)
+    })
     stdin.on('end', function() {
       log('Terminate; connection to parent closed')
       process.exit(0)
@@ -65,7 +69,6 @@ function main() {
 
     process.stdin.setEncoding('utf8')
     process.stdin.pipe(stdin)
-    process.stdin.resume()
 
     var main_func = Function(['print', 'readline', 'evalcx', 'gc', 'quit'], body)
 

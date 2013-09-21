@@ -15,9 +15,39 @@
 //    limitations under the License.
 
 module.exports = LineStream
+module.exports.v2 = LineStream2
 
 var stream = require('stream')
 var util = require('util')
+
+
+util.inherits(LineStream2, stream.Transform)
+function LineStream2 () {
+  if(! (this instanceof LineStream2))
+    return new LineStream2
+
+  stream.Transform.call(this)
+  this.setEncoding('utf8')
+}
+
+LineStream2.prototype._transform = function(message, encoding, done) {
+  var self = this
+
+  message = message.toString(encoding)
+  var lines = message.split(/\n/)
+
+  // If the data ends in "\n" this will be ""; otherwise the final partial line.
+  var remainder = lines.pop()
+  if(remainder)
+    this.unshift(remainder)
+
+  lines.forEach(function(line) {
+    console.log('Push: %j', line)
+    self.push(line)
+  })
+
+  done()
+}
 
 util.inherits(LineStream, stream)
 function LineStream () {
